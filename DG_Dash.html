@@ -115,7 +115,9 @@ function DTE(days) {
 
 /////////////////////////////////////  Bubble Updates //////////////////////////////////////////
 
-d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/Comb13.csv", function(error, data) {
+// d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/Comb13.csv", function(error, data) {
+d3.csv("http://alphagov.github.io/DataGov/Comb13.csv", function(error, data) {
+
 // 	data = data.filter(function(d) { return d['Size(Kb)']>10 })
 	Today = Date()
 	
@@ -256,7 +258,9 @@ function Lnumform(x) {
 
 ////////////////////////////////// Tree Map File Size ///////////////////////////////////////
 
-d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/Comb13.csv", function(error, data) {
+// d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/Comb13.csv", function(error, data) {
+d3.csv("http://alphagov.github.io/DataGov/Comb13.csv", function(error, data) {
+
 	data.sort(function(a,b) {return parseInt(b.Size)-parseInt(a.Size);})
 	d = data.filter(function(d) {return d.UF == 'daily' || d.UF == 'Daily'})
 	UFF.push(d)
@@ -373,7 +377,9 @@ var svg2 = d3.select("#dbid1").append("svg:svg")
 
 KK = []
 
-d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/OrgCount.csv", function(error, data) {
+// d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/OrgCount.csv", function(error, data) {
+d3.csv("http://alphagov.github.io/DataGov/OrgCount.csv", function(error, data) {
+
 // 	data.sort(function(a,b) {return parseInt(b.Size)-parseInt(a.Size);})
 	KK.push(data)
 	GG = []
@@ -547,7 +553,9 @@ d3.select('#dtable').selectAll('th').style("padding","5px")
 
 // ////////////////////////////  Google Analytics Data  //////////////////////////////////
 
-d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/UPVsDataGov.csv", function(error, data) {
+// d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/UPVsDataGov.csv", function(error, data) {
+d3.csv("http://alphagov.github.io/DataGov/UPVsDataGov.csv", function(error, data) {
+
 
 WCd = []
 WCd.push(data)
