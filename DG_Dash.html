@@ -279,8 +279,9 @@ function Tdraw(jk) {
 	JJ.push(data)
 	FF = []
 	FF2 = []
+	FFVal = []
 	
-	for (var j = jk; j < jk+20; j++) {FF.push({"name":JJ[0][j]['name'], "size":JJ[0][j]['Size']}), FF2.push(jk)  }
+	for (var j = jk; j < jk+20; j++) {FF.push({"name":JJ[0][j]['name'], "size":JJ[0][j]['Size']}), FF2.push(jk), FFVal.push(parseInt(JJ[0][j]['Size'])) }
 		
 	GG = {"name":"Data", "children": [{"name":"flare","children":FF}]}
 	
@@ -310,8 +311,8 @@ function Tdraw(jk) {
 	tab = '&nbsp;&nbsp'	
 	
 	tscale = d3.scale.linear()
-					 .domain([3e2,8e6])
-					 .rangeRound([1,3.75])
+					 .domain([d3.min(FFVal),d3.max(FFVal)])
+					 .rangeRound([1,6])
 	
 	var node = div.datum(GG).selectAll(".node")
 		.data(treemap.nodes)
@@ -786,6 +787,19 @@ d3.select("#tot1")
 
 
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
