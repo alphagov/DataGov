@@ -259,8 +259,18 @@ function Lnumform(x) {
 
 ////////////////////////////////// Tree Map File Size ///////////////////////////////////////
 
+
+
 // d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/Comb13.csv", function(error, data) {
 d3.csv("http://alphagov.github.io/DataGov/Comb13.csv", function(error, data) {
+Rec = []
+II = []
+data.sort(function(a,b) {return parseInt(b.Size)-parseInt(a.Size);})
+II.push(data)
+for (var j = 0; j < II[0].length; j++) {Rec.push(II[0][j]['name']) }
+
+
+function Tdraw(jk) {
 
 	data.sort(function(a,b) {return parseInt(b.Size)-parseInt(a.Size);})
 	d = data.filter(function(d) {return d.UF == 'daily' || d.UF == 'Daily'})
@@ -268,8 +278,9 @@ d3.csv("http://alphagov.github.io/DataGov/Comb13.csv", function(error, data) {
 	
 	JJ.push(data)
 	FF = []
+	FF2 = []
 	
-	for (var j = 0; j < 15; j++) {FF.push({"name":JJ[0][j]['name'], "size":JJ[0][j]['Size']})}
+	for (var j = jk; j < jk+20; j++) {FF.push({"name":JJ[0][j]['name'], "size":JJ[0][j]['Size']}), FF2.push(jk)  }
 		
 	GG = {"name":"Data", "children": [{"name":"flare","children":FF}]}
 	
@@ -279,7 +290,7 @@ d3.csv("http://alphagov.github.io/DataGov/Comb13.csv", function(error, data) {
     height = 500 - margin.top - margin.bottom;
 	
 	
-	var color = d3.scale.category20c()
+    color = d3.scale.category20c()
 	
 	var treemap = d3.layout.treemap()
     .size([width, height])
@@ -309,9 +320,9 @@ d3.csv("http://alphagov.github.io/DataGov/Comb13.csv", function(error, data) {
 		.call(position)
 		.style("background", function(d) { return  color(d.name)})
 // 		.text(function(d) { return  d.name + '   ' + ' ' +  Lnumform(d.size) })
-		.html(function(d) { return '<font color=black>' + "<font size ="+tscale(parseInt(d.size))+"em>" + d.name + tab + "<b>" + Lnumform(d.size)+ "</b>"});
+		.html(function(d) { return '<font color=black>' + "<font size ="+tscale(parseInt(d.size))+"em>" + d.name + tab + "<b>" + Lnumform(d.size)+ "</b>"})
 // 		.html(function(d) { return '<font color=black>' + '<font size=4em>'  + d.name + tab + "<b>" + Lnumform(d.size)+ "</b>"});
-
+		
 	
 	var tooltip = d3.select("body").append("div")
 	.attr("class", "tooltip");
@@ -328,17 +339,25 @@ d3.csv("http://alphagov.github.io/DataGov/Comb13.csv", function(error, data) {
          .attr("style", function() { if (mouse[0] < 20) { return "left:"+(mouse[0]+50)+"px;top:"+(mouse[1] - 50)+"px"} else {return "left:"+(mouse[0]+5)+"px;top:"+(mouse[1] - 50)+"px"}})
           .html(d.name + "<b>" + tab + Lnumform(d.size) + "</b>")
       })
-     .on("mouseout", function() {
-   	 			tooltip.classed("hidden", true)
-				
-							})
- 	 
-
+   	 
+	.on("mouseover", function() {
+	    	d3.select(this)
+// 	    				   .style("background", '#4D7094')
+// 	    				   .style("stroke-width", "10px")
+// 	    				   .style("stroke", "rgba(10,10,10,0.2)")
+	    				   .style("stroke-width", "10px")
+})
     
-	
+	.on("mouseout", function() {
+// 		d3.select(this).style("background", function(d) {return console.log(d.name), color(d.name)} )
+		tooltip.classed("hidden", true)					
+		})
 
-// })		
+// })	
+	Crec = []
 	
+	Sel.on("click", function(d,i) {if (i==2) {return d3.select('#Tree').remove(), d3.selectAll('.tooltip').remove(), Tdraw(0)} else {return console.log(d.name,i), Crec.push(i), d3.select('#Tree').remove(), d3.selectAll('.tooltip').remove(), console.log(Rec.indexOf(d.name)), Tdraw(Rec.indexOf(d.name)) }  })
+// 	Sel.on("click", function(d,i) { if (i==0) {return Tdraw(0)}})
 	
 function position() {
   this.style("left", function(d) { return d.x + "px"; })
@@ -346,6 +365,10 @@ function position() {
       .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
       .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
 }
+}
+
+
+Tdraw(0)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
