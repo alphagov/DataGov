@@ -1,6 +1,6 @@
 # Data.gov.uk 
 
-Simple data.gov.uk [dashboard](http://DPCollins.github.io/FCO2/WorldLOCAL.html) highlighting:
+Simple data.gov.uk [dashboard](http://alphagov.github.io/DataGov/DG_Dash.html) highlighting:
 
 * Recently updated datasets
 * dataset file sizes in descending order
