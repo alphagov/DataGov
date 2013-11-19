@@ -1,0 +1,779 @@
+
+<html>
+<head>
+<!-- <script src="./scripts.js"></script> -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
+<!-- <script type="text/javascript" src="https://jardindesconnaissances.googlecode.com/svn-history/r82/trunk/public/js/d3.layout.cloud.js"/></script> -->
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300' rel='stylesheet' type='text/css'>
+<style type="text/css">
+
+body{font-family: Arial, sans-serif;font-size:10px; background: "rgba(25,34,54,0.05)"}
+/* body{font-family: PT sans, sans-serif;font-size:10px;} */
+body,html{
+	height:100%;
+	width:100%;}
+
+
+.axis line,
+.axis path {
+	fill: none;
+/* 	stroke:#b6b6b6;  */
+	stroke:#000;
+	stroke: black;
+	opacity: 0.7;
+	stroke-width:1.5;
+	shape-rendering: crispEdges;}
+
+/*.tick line{fill:none;stroke:none;}*/
+.axis text {
+	font: 13px sans-serif;
+	}
+
+.tick text{
+/* 	fill:#999; */
+	fill:#000;
+	}
+	
+.node {
+  border: solid 1.75px white;
+  font-family: PT sans;
+/*   line-height: 15px; */
+  overflow: hidden;
+  
+  position: absolute;
+  text-indent: 2px;
+}
+
+.tooltip {
+  font:16px sans-serif;
+  color: #222; 
+  background: #fff; 
+  padding: .5em; 
+  text-shadow: #f5f5f5 0 1px 0;
+  border-radius: 2px; 
+  box-shadow: 0px 0px 2px 0px #a6a6a6; 
+  opacity: 0.99; 
+  position: absolute;
+  
+  }
+
+.tooltip.hidden {
+	display: none;
+	opacity: 0;
+	} 
+
+
+
+g.journal.active{cursor:pointer;}
+text.label{font-size:14px;font-weight:bold;cursor:pointer;}
+text.value{font-size:15px;font-weight:bold;}
+</style>
+</head>
+<body>
+
+<script type="text/javascript">
+d3.select('body').style("background", "rgba(25,34,54,0.02)")
+$( document ).ready(function() {d3.select('.tooltip').classed("hidden",true)})
+
+function truncate(str, maxLength, suffix) {
+	if(str.length > maxLength) {
+		str = str.substring(0, maxLength + 1); 
+		str2 = str.substring(0, Math.min(str.length, str.lastIndexOf(" ")));
+		str = str + suffix; 
+// 		str = str + suffix;
+	}
+	return str;
+}
+
+
+var margin = {top: 30, right: 500, bottom: 0, left: 20},
+	width = 475,
+	height = 555;
+
+
+var c = d3.scale.category10();
+
+
+var svg = d3.select("body").append("svg")
+	.attr("id", "update")
+	.attr("width", width + margin.left + margin.right)
+	.attr("height", height + margin.top + margin.bottom)
+	.style("margin-left", margin.left + "px")
+	.append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+dat = []
+
+function DTE(days) {
+	D = Date()
+	QQ = new Date(D)
+	AA = QQ.setDate(QQ.getDate()-days)
+	return new Date(AA)
+	}
+
+/////////////////////////////////////  Bubble Updates //////////////////////////////////////////
+
+d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/Comb13.csv", function(error, data) {
+// 	data = data.filter(function(d) { return d['Size(Kb)']>10 })
+	Today = Date()
+	
+	data = data.filter(function(d) { return new Date(d.DLM)> DTE(8)})
+	
+	dat.push(data)
+	if (dat[0].length > 20) {
+		dat[0] = dat[0].slice(0,20)
+		}
+	ey = new Date(dat[0][0]['DLM'])
+	sy = new Date(dat[0][dat[0].length-1]['DLM'])
+	
+	 
+	x = d3.time.scale()
+	.domain([sy,ey])
+	.range([0, width])
+
+
+	xAxis = d3.svg.axis()
+		.scale(x)
+		.orient("top")
+		
+ 
+	var formatYears = d3.time.format("%d-%b");
+// 	xAxis.tickFormat(formatYears);
+	
+	xAxis.ticks(d3.time.days, Math.floor((sy - ey) / (1000*60*60*24))+1).tickFormat(formatYears)
+	
+// 	xAxis.ticks(Math.floor((ey - sy) / (1000*60*60*24))+1) 
+	 
+	 xScale = d3.time.scale()
+		.domain([sy, ey])
+		.range([0, width]);
+
+	svg.append("g")
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + 0 + ")")
+		.call(xAxis);
+
+	file = []
+	sze = []
+	
+	for (var j = 0; j < dat[0].length; j++) {
+		file.push(dat[0][j]['Art'])
+		sze.push(parseInt(dat[0][j]['Size']))
+		
+		}
+	
+	
+	
+	for (var j = 0; j < dat[0].length; j++) {
+// 		console.log(data[j]['Art'])
+		var g = svg.append("g").attr("class","journal");
+
+		var circles = g.selectAll("circle")
+// 			.data(data[j]['articles'])
+			.data(data[j]['Art'])
+			.enter()
+			.append("circle");
+
+		var text = g.selectAll("text")
+			.data(data[j]['Art'])
+			.enter()
+			.append("text");
+
+		var rScale = d3.scale.linear()
+			.domain([0, d3.max(sze)])
+			.range([4, 15]);
+
+		circles
+			.data(data)
+			.attr("cx", function(d,i) { return xScale(new Date(dat[0][j]['DLM'])); console.log(d.DLM[i]) })
+// 			.attr("cx", 5)
+			.attr("cy", j*27+20)
+// 			.attr("r", function(d) { return rScale(d[1]); })
+			.attr("r", function(d) {return rScale(dat[0][j]['Size'])} )
+			.style("fill", function(d) { return c(dat[0][j]['DLM']); })
+			.style("opacity", 0.80);
+
+		text
+			.attr("y", j*27+25)
+			.attr("x",function(d, i) { a = xScale(new Date(dat[0][j]['DLM'])); if (a < 50) {return a+50} else {return a-100} })
+			.attr("id", function(d,i) {return j})
+			.attr("class","value")
+			.text(function(d){ return dat[0][j]['Art'] + ' Files ' +  Lnumform(dat[0][j]['Size']); })
+// 			.style("fill", function(d) { return c(j); })
+			.style("fill", function(d) { return c(dat[0][j]['DLM'])})
+			.style("display","none");
+
+		g.append("text")
+			.attr("id", "hello")
+			.attr("y", j*27+25)
+			.attr("x",width+20)
+			.attr("class","label")
+			.text(truncate(data[j]['name'],59,"..."))
+// 			.style("fill", function(d) { return c(j); })
+			.style("fill", function(d) { return "black"; })
+			.style("opacity", 0.75)
+			.on("mouseover", mouseover)
+			.on("mouseout", mouseout);
+	};
+
+	
+	function mouseover(p) {
+		g = d3.select(this).node().parentNode;
+		d3.select(g).selectAll("circle").style("display","none");
+		d3.select(g).selectAll("text.value").style("display","block");
+		
+		}
+
+	function mouseout(p) {
+		var g = d3.select(this).node().parentNode;
+		d3.select(g).selectAll("circle").style("display","block");
+		d3.select(g).selectAll("text.value").style("display","none");
+	}
+});
+
+JJ = []
+UFF = []
+
+////////////////////// Helper function to convert notation //////////////////////////////
+
+function Lnumform(x) {
+	if ( 1000 < parseInt(x) && parseInt(x) < 1e6) {
+		y = Math.round(parseInt(x)/100,2)/10
+		x = y+'MB'}
+	else if (parseInt(x) > 1e6) {
+		y = Math.round(parseInt(x)/1e5,2)/10
+		x = y+ 'GB'}
+	
+	else {x = x+'KB'}
+	
+	return x
+	}
+		
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////// Tree Map File Size ///////////////////////////////////////
+
+d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/Comb13.csv", function(error, data) {
+	data.sort(function(a,b) {return parseInt(b.Size)-parseInt(a.Size);})
+	d = data.filter(function(d) {return d.UF == 'daily' || d.UF == 'Daily'})
+	UFF.push(d)
+	
+	JJ.push(data)
+	FF = []
+	
+	for (var j = 0; j < 15; j++) {FF.push({"name":JJ[0][j]['name'], "size":JJ[0][j]['Size']})}
+		
+	GG = {"name":"Data", "children": [{"name":"flare","children":FF}]}
+	
+
+	var margin = {top: 20, right: 0, bottom: 5, left: 2},
+    width = 910 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+	
+	
+	var color = d3.scale.category20c()
+	
+	var treemap = d3.layout.treemap()
+    .size([width, height])
+    .sticky(true)
+//     .children(function(d) {return d.name})
+    .value(function(d) { return d.size; })
+    
+    
+    var div = d3.select("body").append("div")
+    .attr("id","Tree")
+    .style("position", "relative")
+    .style("width", (width + margin.left + margin.right) + "px")
+    .style("height", (height + margin.top + margin.bottom) + "px")
+    .style("left", margin.left + "px")
+    .style("top", margin.top + "px");
+	
+	tab = '&nbsp;&nbsp'	
+	
+	tscale = d3.scale.linear()
+					 .domain([3e2,8e6])
+					 .rangeRound([1,3.75])
+	
+	var node = div.datum(GG).selectAll(".node")
+		.data(treemap.nodes)
+		.enter().append("div")
+		.attr("class", "node")
+		.call(position)
+		.style("background", function(d) { return  color(d.name)})
+// 		.text(function(d) { return  d.name + '   ' + ' ' +  Lnumform(d.size) })
+		.html(function(d) { return '<font color=black>' + "<font size ="+tscale(parseInt(d.size))+"em>" + d.name + tab + "<b>" + Lnumform(d.size)+ "</b>"});
+// 		.html(function(d) { return '<font color=black>' + '<font size=4em>'  + d.name + tab + "<b>" + Lnumform(d.size)+ "</b>"});
+
+	
+	var tooltip = d3.select("body").append("div")
+	.attr("class", "tooltip");
+	
+	
+	Sel = d3.select('#Tree').selectAll('.node')
+	Sel
+      .on("mousemove", function(d,i) {
+        var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
+
+    tooltip
+          .classed("hidden", false)
+          .attr("style", "left:"+(mouse[0]+5)+"px;top:"+(mouse[1] - 50)+"px")
+          .html(d.name + "<b>" + tab + Lnumform(d.size) + "</b>")
+      })
+     .on("mouseout", function() {
+   	 			tooltip.classed("hidden", true)})
+//    	 .on("click", click)
+	
+
+
+// })	
+	
+	
+function position() {
+  this.style("left", function(d) { return d.x + "px"; })
+      .style("top", function(d) { return d.y + "px"; })
+      .style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
+      .style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+// 										Bubble											//
+
+var margin = {top: 30, right: 0, bottom: 10, left: 500},
+    width = 910 - margin.left - margin.right,
+    height = 430 - margin.top - margin.bottom;
+
+var diameter = 650,
+    format = d3.format(",d"),
+    color = d3.scale.category20c();
+
+var bubble = d3.layout.pack()
+    .sort(null)
+    .size([diameter, diameter])
+    .padding(1.5);
+
+var bdiv = d3.select("body").append("div")
+			.attr("id", "dbid1")
+			.style("height", 430)
+			.style("width", 850)
+			.style("position", "absolute")
+			.style("left", 920)
+			.style("top", 520)
+
+var svg2 = d3.select("#dbid1").append("svg:svg")
+    .attr("width", 900)
+    .attr("height", diameter)
+//     .attr("left", 500)
+    .attr("class", "bubble");
+    
+
+
+KK = []
+
+d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/OrgCount.csv", function(error, data) {
+// 	data.sort(function(a,b) {return parseInt(b.Size)-parseInt(a.Size);})
+	KK.push(data)
+	GG = []
+	
+	op = d3.scale.linear()
+		   .domain([0,30])
+		   .range([1,0.4])
+	
+	for (var j = 0; j < 35; j++) {GG.push({"name":KK[0][j]['Dept'], "size":KK[0][j]['Count']})}
+		
+	HH = {"name":"Data", "children": [{"name":"flare","children":GG}]}    
+    
+	node = svg2.selectAll(".node")
+      .data(bubble.nodes(classes(HH))
+      .filter(function(d) { return !d.children; }))
+    .enter().append("g")
+      .attr("class", "node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+	// node.append("title")
+//       .text(function(d) { return d.className + ": " + format(d.value); });
+
+    node.append("circle")
+      .attr("r", function(d) { return d.r; })
+      .style("fill", function(d) { return color(d.packageName); })
+      .style("opacity", function(d,i) { return op(i) });
+   
+
+    
+    
+    node.append("text")
+      .attr("dy", ".3em")
+      .style("text-anchor", "middle")
+//    .attr("dy", ".5em")
+      .style("text-align", "center")
+      .style("vertical-align", "middle")
+      .style("font-family", "georgia", "'times new roman'", "times", "sans-serif")
+//        .style("font-family", "Open Sans")
+      .attr("fill", "black")
+      .style("opacity", 0.8)
+      .text(function(d) { if (d.className == 'Department for Communities and Local Government') {return 'DCLG'} else if (d.className == 'Office for National Statistics') {return 'ONS'} else if (d.className == 'NHS Information Centre for Health and Social Care') {return "NHS ICHSC"} else if (d.className == 'Department for Environment, Food and Rural Affairs') {return 'DEFRA'} else if (d.className == 'Department for Work and Pensions') {return 'DWP'} else if (d.className == 'Department for Business, Innovation and Skills') {return 'BIS'} else if (d.className == 'Department for Education') {return "DfE"} else if (d.className == 'Department for Transport') {return 'DfT'} else if (d.className == 'Ministry of Justice') {return 'MoJ'} else if (d.className == 'Welsh Government') {return 'Welsh Gov'} else if (d.className == 'Department of Health') {return 'DoH'} else if (d.className == 'Department for Children, Schools and Families') {return 'DCSF'} else if (d.className == 'Scottish Government') {return 'Scot Gov'} else if (d.className == 'Home Office') {return "HO"} else if (d.className == 'Ministry of Defence') {return "MOD"} else if (d.className.replace("'",'') == 'Her Majestys Revenue and Customs') {return "HMRC"} else if (d.className == 'Cabinet Office') {return "CO"} else if (d.className.substring(0,10) == 'Department') { return (d.className.substring(0,3)+'t' + d.className.substring(10, d.r / 3))} else { return d.className.substring(0, d.r / 3) }})
+// 	  .text(function(d) {return d.className.substring(0,9)})
+	  
+	  .style("font-size", "18px") // initial guess
+      .style("font-size", function(d) { return (1.7 * d.r - 8) / this.getComputedTextLength() * 18 + "px"; });
+
+
+
+	
+
+	
+	
+	var tooltip = d3.select("body").append("div")
+	.attr("class", "tooltip");
+	
+	Sel2 = d3.select('#dbid1').selectAll('.node')
+	Sel2
+      .on("mousemove", function(d,i) {
+        var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
+	 
+   
+    tooltip
+          .classed("hidden", false)
+          .attr("style", "left:"+(mouse[0]+100)+"px;top:"+(mouse[1] - 50)+"px")
+          .html(d.className + "<b>" + tab + format(d.value) + "</b>")
+      })
+     .on("mouseout", function() {
+   	 			tooltip.classed("hidden", true)})
+   	 
+   	 
+   	 d3.select('#dbid1').selectAll("circle")
+   	 
+		.on("mouseover", function() {
+	    	d3.select(this).style("fill", '#4D7094')
+// 	    				   .style("stroke-width", "10px")
+	    				   .style("stroke", "rgba(10,10,10,0.2)")
+	    				   .style("stroke-width", "3px")
+	    				  
+	    	})
+		
+		
+		.on("mouseout", function(d) {
+			d3.select(this).style("fill", color(d.packageName))
+							.style("stroke-width", "1px")
+							.style
+			})	  
+		
+
+
+})
+
+
+
+function classes(root) {
+  var classes = [];
+
+  function recurse(name, node) {
+    if (node.children) node.children.forEach(function(child) { recurse(node.name, child); });
+    else classes.push({packageName: name, className: node.name, value: node.size});
+  }
+
+  recurse(null, root);
+  return {children: classes};
+}
+
+
+
+// ///////////////////////////////////// Table ///////////////////////////////////////////
+
+d3.select("body").append("div")
+			.attr("id", "dtable")
+			.style("height", 525)
+			.style("width", 550)
+			.style("position", "absolute")
+			.style("left", 1570)
+// 			.style("top", 70+'%')
+			.style("top", 580)
+			
+			.style("display", "block")
+			
+			
+			
+var table = d3.select("#dtable").append("table");
+	thead = table.append("thead");
+	tbody = table.append("tbody");
+	
+
+
+table.style("border-collapse", "collapse")
+table.style("width", 100+"%")
+table.style("height", 100+"%")
+table.style("background", "rgba(25,34,54,0.02)")
+table.style("text-align", "left")
+	
+thead.append("th").text("Dataset").style("font-size", "19px");
+thead.append("th").text("UpdateFrequency").style("font-size", "19px");
+thead.style("border", "2px solid white")
+	.style("border-collapse", "collapse")
+// thead.append("th").text("FileTypes");
+
+
+GT = []
+for (var i=0;i<UFF[0].length-17;i++) { GT.push(i)}
+
+
+var tr = tbody.selectAll("tr")
+	.data(GT)
+	.enter().append("tr")
+	 .style("border", "2px solid white")
+	
+UFF[0] = UFF[0].sort(function() {
+  return .5 - Math.random();
+})	
+	
+
+var td = tr.selectAll("td")
+      .data(function(d,i) { return [UFF[0][i]['name'], UFF[0][i]['UF'].toLowerCase()]; })
+      .enter().append("td")
+	  
+      .text(function(d) { return d; })
+	  .style("font-size", "17px")
+	  .style("font-family", "PT Sans")
+	  .attr("fill", "black")
+	 //  .style("border", "1px solid white")
+	  .style("padding", '5px')
+	 
+d3.select('#dtable').selectAll('th').style("padding","5px")
+
+
+})
+
+// ////////////////////////////  Google Analytics Data  //////////////////////////////////
+
+d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/UPVsDataGov.csv", function(error, data) {
+
+WCd = []
+WCd.push(data)
+
+Set = []
+Vws = []
+pct = []
+Tot = []
+DBYTot = []
+
+for (i=0;i<11;i++) {
+	Set.push(WCd[0][i]['Set'])
+	Vws.push(parseInt(WCd[0][i]['YestUPVs']))
+	pct.push( (parseInt(WCd[0][i]['pctChng'])))
+	Tot.push(parseInt(WCd[0][0]['YTotal']))
+	DBYTot.push(parseInt(WCd[0][0]['DBYTotal']))
+	
+	
+	}
+	
+
+PCL = []
+
+PCL.push(pct)
+
+for (k=0;k<pct.length;k++) {
+	if (pct[k] > 0) {PCL[k] = '+'+pct[k]}}
+
+var fill = d3.scale.category20();
+
+sxsc = d3.scale.linear()
+			.domain([d3.min(Vws),d3.max(Vws)])
+			.range([10,50])
+
+colorfl = d3.scale.linear()
+			.domain([d3.min(pct),0,d3.max(pct)])
+			.range(["#FF0000", "orange","#00FF00"])
+			
+
+ d3.select("body").append("div")
+  	.attr("id", "cloud")
+  	.style("width", 1120)
+  	.style("height", 350)
+  	.style("position", "absolute")
+  	.style("top", 225)
+  	.style("left",1000)
+//   	.style("background", "rgba(9,15,4,0.02)") 
+  	.style("border radius", 10)
+ 
+
+
+ 
+//   d3.layout.cloud().size([1500, 900])
+// 	
+// 	.words(Set.map(function(d,j) {
+//         return {text: Set[j], size: sxsc(Vws[j]), col: pct[j] };
+//       }))
+//  
+//       
+//       
+// //       .rotate(function() { return ~~(Math.random() * 2) * 90; })
+//       .rotate(function() {return 0})
+//       .font("Impact")
+//       .fontSize(function(d) { return d.size; })
+//       .on("end", draw)
+//       .start();
+// 
+//  
+//  
+//   function draw(words) {
+//     d3.select("#cloud").append("svg")
+//         .attr("width", 99+'%')
+//         .attr("height", 99+'%')
+// //         .style("position", "relative")
+// //       	.style("top", 0)
+// //       	.style("left", 0)
+//       
+//       .append("g")
+//         .attr("transform", "translate(700,240)")
+//       .selectAll("text")
+//         .data(words)
+//       .enter().append("text")
+//         .style("font-size", function(d) { return d.size + "px"; })
+//         .style("font-family", "Impact")
+//         .style("fill", function(d,i) { return colorfl(pct[i]); })
+// //         .style("fill", function(i) { return "red" })
+//         .attr("text-anchor", "middle")
+//         .attr("transform", function(d) {
+// //           return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+//         return "translate(" + [0, d.y+9] + ")rotate(" + d.rotate + ")";
+//         })
+//         .text(function(d) { return d.text; });
+//   }
+
+
+var table = d3.select("#cloud").append("table");
+	thead = table.append("thead");
+	tbody = table.append("tbody");
+	
+
+table.style("border-collapse", "collapse")
+table.style("border-side", "none")
+table.style("width", 100+"%")
+// table.style("font-family", "Impact")
+table.style("font-weight", 300)
+table.style("opacity", 0.7)
+table.style("background", "rgba(25,34,54,0.03)")
+table.style("text-align", "left")
+
+thead.style("border", "2px solid white")
+	.style("border-collapse", "collapse")
+	
+
+
+thead.append("th").text(" Most Popular Datasets").style("font-size", "21px");
+thead.append("th").text("Views Yesterday").style("font-size", "21px");
+thead.append("th").text("% Change on Previous Day").style("font-size", "21px");
+
+GAX = []
+for (var i=0;i<Set.length-4;i++) { GAX.push(i)}
+
+
+var tr = tbody.selectAll("tr")
+	.data(GAX)
+	.enter().append("tr")
+	.style("border", "2px solid white")
+	.style("color",  function(d,i) {return colorfl(pct[i])})
+// 	.style("color", "black")
+// 	.style("background", "grey")
+// 	.style("opacity", 0.05)
+	
+
+	
+var td = tr.selectAll("td")
+      .data(function(d,i) { return [Set[i], Vws[i], PCL[i]+'%']; })
+      .enter().append("td")
+	  .attr("id", function(d,k) {return k}) 
+      .text(function(d,i) { return d; console.log(d) })
+	  .style("font-size", "25px")
+// 	  .style("font-family", "Impact")
+//  	  .style("color", function(d,i) { if (d.toString().indexOf('%') > 0) {return console.log(i); colorfl(pct[i])} else {return "black"}})
+ 	  .style("font-family", "Helvetica Neue")
+ 	  .style("font-weight", 200)
+
+// 	  .style("color",  function(d,i) {return colorfl(pct[i])})
+	 //  .style("border", "1px solid white")
+	  .style("padding", '5px')
+// 	  .style("color", function(d,i) { return i ? null : "black"; })
+	  .style("color", function(d,i) {if (i == 0 || i == 1) {return "black"} })
+
+
+d3.select('#cloud').selectAll('th').style("padding","5px")
+
+//  /////////////////////// Google Analytics Total UPVs /////////////////////////////////
+
+
+d3.select("body").append("div")
+  	.attr("id", "Total")
+  	.style("width", 1210)
+  	.style("height", 260)
+  	.style("position", "absolute")
+  	.style("top", 3)
+  	.style("left",1000)
+//   	.style("background", "rgba(9,15,4,0.05)") 
+  	.style("border radius", 10)
+
+// Tot[0] = 16987
+
+d3.select("#Total").append("svg")
+	.attr("id", "tot1")
+	.style("width", 100+"%")
+	
+	.append('text')
+	.text(Tot[0])
+	.style("position", "relative")
+	.attr("x", 8+'%')
+	.attr("y", 70+'%')
+	.attr("text-anchor", "left")
+	.style("font-size", "19em")
+	.style("font-family", "Impact")
+// 	.attr("fill", function() {if (Tot[0] > DBYTot[0] ) {return "#82D282"} else {return "#FF0000"} })
+	.attr("fill", "black")
+	.style("opacity", 0.8)
+
+
+pCng = Math.round(100*(Tot[0] - DBYTot[0])/DBYTot[0],1)
+
+d3.select("#tot1")
+	.append('text')
+	.text(function() {if (pCng > 0) {return "(+"+pCng+'%'+")"} else {return "("+pCng+'%'+")" }})
+	.style("position", "relative")
+	.attr("x", function() {if (Tot[0] > 9999) {return 51+'%'} else {return 41+'%'}})
+	.attr("y", 70+'%')
+	.attr("text-anchor", "left")
+	.style("font-size", "15em")
+	.style("font-family", "Impact")
+	.attr("fill", function() {if (Tot[0] > DBYTot[0] ) {return "#82D282"} else {return "#FF0000"} })
+
+
+
+
+
+
+
+
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// })	
+
+
+</script>
+
+</body>
+</html>
