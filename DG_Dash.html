@@ -327,23 +327,16 @@ d3.csv("http://alphagov.github.io/DataGov/Comb13.csv", function(error, data) {
          .attr("style", function() { if (mouse[0] < 20) { return "left:"+(mouse[0]+50)+"px;top:"+(mouse[1] - 50)+"px"} else {return "left:"+(mouse[0]+5)+"px;top:"+(mouse[1] - 50)+"px"}})
           .html(d.name + "<b>" + tab + Lnumform(d.size) + "</b>")
       })
- .on("mouseout", function() {
+     .on("mouseout", function() {
    	 			tooltip.classed("hidden", true)
-				d3.select(this).style("background", color(d.name))
-							.style("stroke-width", "1px")
+				
 							})
+ 	 
+
+    
 	
-	 d3.select('#Tree').selectAll(".node")
-   	 
-		.on("mouseover", function() {
-	    	d3.select(this).style("background", '#4D7094')
-// 	    				   .style("stroke-width", "10px")
-	    				   .style("stroke", "rgba(10,10,10,0.2)")
-	    				   .style("stroke-width", "3px")
-})
 
-
-// })	
+// })		
 	
 	
 function position() {
