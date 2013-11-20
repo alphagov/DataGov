@@ -273,14 +273,17 @@ function Lnumform(x) {
 d3.csv("http://alphagov.github.io/DataGov/Comb13.csv", function(error, data) {
 Rec = []
 II = []
-data.sort(function(a,b) {return parseInt(b.Size)-parseInt(a.Size);})
-II.push(data)
+x = data
+x.sort(function(a,b) {return parseInt(b.Size)-parseInt(a.Size);})
+x = x.filter(function(d) {return parseInt(d.Size) != 7659})
+II.push(x)
 for (var j = 0; j < II[0].length; j++) {Rec.push(II[0][j]['name']) }
 
+Crec = []
 
 function Tdraw(jk) {
 
-	data.sort(function(a,b) {return parseInt(b.Size)-parseInt(a.Size);})
+// 	data.sort(function(a,b) {return parseInt(b.Size)-parseInt(a.Size);})
 	d = data.filter(function(d) {return d.UF == 'daily' || d.UF == 'Daily'})
 	UFF.push(d)
 	
@@ -289,9 +292,9 @@ function Tdraw(jk) {
 	FF2 = []
 	FFVal = []
 	
-	for (var j = jk; j < jk+20; j++) {FF.push({"name":JJ[0][j]['name'], "size":JJ[0][j]['Size']}), FF2.push(jk), FFVal.push(parseInt(JJ[0][j]['Size'])) }
+	for (var j = jk; j < jk+20; j++) {FF.push({"name":II[0][j]['name'], "size":II[0][j]['Size']}), FF2.push(jk), FFVal.push(parseInt(II[0][j]['Size'])) }
 		
-	GG = {"name":"Data", "children": [{"name":"flare","children":FF}]}
+	GGx = {"name":"Data", "children": [{"name":"flare","children":FF}]}
 	
 
 	var margin = {top: 10, right: 0, bottom: 5, left: 5},
@@ -322,7 +325,7 @@ function Tdraw(jk) {
 					 .domain([d3.min(FFVal),d3.max(FFVal)])
 					 .rangeRound([1,5.2])
 	
-	var node = div.datum(GG).selectAll(".node")
+	var node = div.datum(GGx).selectAll(".node")
 		.data(treemap.nodes)
 		.enter().append("div")
 		.attr("class", "node")
@@ -364,9 +367,9 @@ function Tdraw(jk) {
 		})
 
 // })	
-	Crec = []
 	
-	Sel.on("click", function(d,i) {if (i==2) {return d3.select('#Tree').remove(), d3.selectAll('#treetip').remove(), Tdraw(0)} else {return console.log(d.name,i), Crec.push(i), d3.select('#Tree').remove(), d3.selectAll('#treetip').remove(), console.log(Rec.indexOf(d.name)), Tdraw(Rec.indexOf(d.name)) }  })
+	
+	Sel.on("click", function(d,i) {if (d.name==Crec[Crec.length-1]) {return d3.select('#Tree').remove(), d3.selectAll('#treetip').remove(), Tdraw(0)} else {return console.log(d.name,i), Crec.push(d.name), d3.select('#Tree').remove(), d3.selectAll('#treetip').remove(), console.log(Rec.indexOf(d.name)), Tdraw(Rec.indexOf(d.name)) }  })
 // 	Sel.on("click", function(d,i) { if (i==0) {return Tdraw(0)}})
 	
 function position() {
@@ -378,7 +381,7 @@ function position() {
 }
 
 
-Tdraw(0)
+Tdraw(447)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
