@@ -124,7 +124,7 @@ function DTE(days) {
 
 /////////////////////////////////////  Bubble Updates //////////////////////////////////////////
 
-// d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/Comb13.csv", function(error, data) {
+// d3.csv("http://localhost:8888/Documents/Git_Work/DataGov/Comb13.csv", function(error, data) {
 d3.csv("http://alphagov.github.io/DataGov/Comb13.csv", function(error, data) {
 
 // 	data = data.filter(function(d) { return d['Size(Kb)']>10 })
@@ -269,7 +269,7 @@ function Lnumform(x) {
 
 
 
-// d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/Comb13.csv", function(error, data) {
+// d3.csv("http://localhost:8888/Documents/Git_Work/DataGov/Comb13.csv", function(error, data) {
 d3.csv("http://alphagov.github.io/DataGov/Comb13.csv", function(error, data) {
 Rec = []
 II = []
@@ -415,7 +415,7 @@ var svg2 = d3.select("#dbid1").append("svg:svg")
 
 KK = []
 
-// d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/OrgCount.csv", function(error, data) {
+// d3.csv("http://localhost:8888/Documents/Git_Work/DataGov/OrgCount.csv", function(error, data) {
 d3.csv("http://alphagov.github.io/DataGov/OrgCount.csv", function(error, data) {
 
 // 	data.sort(function(a,b) {return parseInt(b.Size)-parseInt(a.Size);})
@@ -596,7 +596,7 @@ d3.select('#dtable').selectAll('th').style("padding","5px")
 
 // ////////////////////////////  Google Analytics Data  //////////////////////////////////
 
-// d3.csv("http://localhost:8888/Documents/Git_Work/Data_GOV/UPVsDataGov.csv", function(error, data) {
+// d3.csv("http://localhost:8888/Documents/Git_Work/DataGov/UPVsDataGov.csv", function(error, data) {
 d3.csv("http://alphagov.github.io/DataGov/UPVsDataGov.csv", function(error, data) {
 
 
@@ -730,10 +730,11 @@ var tr = tbody.selectAll("tr")
 // 	.style("background", "grey")
 // 	.style("opacity", 0.05)
 	
-
+pct2 = []
+for (var t=0; t<pct.length;t++) { if (pct[t] > 0) {pct2.push('+'+pct[t])} else {pct2.push(pct[t])}}
 	
 var td = tr.selectAll("td")
-      .data(function(d,i) { return [Set[i], Vws[i], pct[i]+'%']; })
+      .data(function(d,i) { return [Set[i], Vws[i], pct2[i]+'%']; })
       .enter().append("td")
 	  .attr("id", function(d,k) {return k}) 
       .text(function(d,i) { return d; console.log(d) })
